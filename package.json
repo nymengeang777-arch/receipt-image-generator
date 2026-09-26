@@ -1,16 +1,13 @@
 {
   "name": "receipt-image-generator",
   "version": "1.0.0",
-  "description": "Invoice image renderer for Loyverse bot",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
+    "@sparticuz/chromium": "^126.0.0",
     "express": "^4.19.2",
-    "puppeteer": "^22.6.0"
-  },
-  "engines": {
-    "node": ">=18"
+    "puppeteer-core": "^22.6.0"
   }
 }
