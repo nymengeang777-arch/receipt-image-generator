@@ -14,7 +14,7 @@ app.post('/generate-receipt', async (req, res) => {
       customer = 'អតិថិជនទូទៅ',
       items = [],
       totalMoney = 0,
-      currency = 'USD', // ទទួលរូបិយប័ណ្ណពី Loyverse (USD ឬ KHR)
+      currency = '', // ទុកទទេ ដើម្បីឱ្យប្រព័ន្ធឆែកស្វ័យប្រវត្តិ
       paymentType = 'Cash',
       isUnpaid = false,
       qrUrl = 'https://i.imgur.com/39PcZgX.jpeg'
@@ -23,8 +23,15 @@ app.post('/generate-receipt', async (req, res) => {
     const exchangeRate = 4100; // អត្រាប្តូរប្រាក់
     const rawTotal = Number(totalMoney || 0);
 
-    // ត្រួតពិនិត្យប្រភេទលុយ៖ បើមានពាក្យ USD ឬតម្លៃសរុបតូចជាង ១០០០ ចាត់ទុកជាដុល្លារ
-    const isUSD = String(currency).toUpperCase() === 'USD' || (rawTotal < 1000 && rawTotal > 0);
+    // លក្ខខណ្ឌវៃឆ្លាតស្វ័យប្រវត្តិ (ដោះស្រាយបញ្ហា 4500 ចេញ $)
+    let isUSD = false;
+    if (String(currency).toUpperCase() === 'USD') {
+      isUSD = true;
+    } else if (String(currency).toUpperCase() === 'KHR') {
+      isUSD = false;
+    } else {
+      isUSD = (rawTotal < 1000 && rawTotal > 0);
+    }
 
     let displayPrimaryTotal = '';
     let displaySecondaryTotal = '';
