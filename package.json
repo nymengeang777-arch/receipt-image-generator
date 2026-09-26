@@ -1,0 +1,16 @@
+{
+  "name": "receipt-image-generator",
+  "version": "1.0.0",
+  "description": "Invoice image renderer for Loyverse bot",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "node-html-to-image": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
