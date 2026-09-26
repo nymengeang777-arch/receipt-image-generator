@@ -14,20 +14,49 @@ app.post('/generate-receipt', async (req, res) => {
       customer = 'អតិថិជនទូទៅ',
       items = [],
       totalMoney = 0,
-      totalUSD = '0.00',
+      currency = 'USD', // ទទួលរូបិយប័ណ្ណពី Loyverse (USD ឬ KHR)
       paymentType = 'Cash',
       isUnpaid = false,
       qrUrl = 'https://i.imgur.com/39PcZgX.jpeg'
     } = req.body;
 
-    const itemsRows = items.map((it, idx) => `
-      <tr>
-        <td style="padding: 6px 4px; border-bottom: 1px dashed #e2e8f0; font-size: 13px;">${idx + 1}. ${it.name}</td>
-        <td style="padding: 6px 4px; border-bottom: 1px dashed #e2e8f0; font-size: 13px; text-align: center;">${it.qty}</td>
-        <td style="padding: 6px 4px; border-bottom: 1px dashed #e2e8f0; font-size: 13px; text-align: right;">${Number(it.price || 0).toLocaleString()}៛</td>
-        <td style="padding: 6px 4px; border-bottom: 1px dashed #e2e8f0; font-size: 13px; text-align: right; font-weight: bold;">${(Number(it.qty || 1) * Number(it.price || 0)).toLocaleString()}៛</td>
-      </tr>
-    `).join('');
+    const exchangeRate = 4100; // អត្រាប្តូរប្រាក់
+    const rawTotal = Number(totalMoney || 0);
+
+    // ត្រួតពិនិត្យប្រភេទលុយ៖ បើមានពាក្យ USD ឬតម្លៃសរុបតូចជាង ១០០០ ចាត់ទុកជាដុល្លារ
+    const isUSD = String(currency).toUpperCase() === 'USD' || (rawTotal < 1000 && rawTotal > 0);
+
+    let displayPrimaryTotal = '';
+    let displaySecondaryTotal = '';
+
+    if (isUSD) {
+      // ករណីជាប្រាក់ដុល្លារ ($)
+      displayPrimaryTotal = `$${rawTotal.toFixed(2)}`;
+      displaySecondaryTotal = `≈ ${(Math.round(rawTotal * exchangeRate)).toLocaleString()} ៛`;
+    } else {
+      // ករណីជាប្រាក់រៀល (៛)
+      displayPrimaryTotal = `${Math.round(rawTotal).toLocaleString()} ៛`;
+      displaySecondaryTotal = `≈ $${(rawTotal / exchangeRate).toFixed(2)}`;
+    }
+
+    // រៀបចំបន្ទាត់ទំនិញ (Item Rows) ដោយដាក់សញ្ញា $ ឬ ៛ តាមប្រភេទលុយ
+    const itemsRows = items.map((it, idx) => {
+      const priceNum = Number(it.price || 0);
+      const qtyNum = Number(it.qty || 1);
+      const itemTotal = qtyNum * priceNum;
+
+      const priceText = isUSD ? `$${priceNum.toFixed(2)}` : `${Math.round(priceNum).toLocaleString()}៛`;
+      const totalText = isUSD ? `$${itemTotal.toFixed(2)}` : `${Math.round(itemTotal).toLocaleString()}៛`;
+
+      return `
+        <tr>
+          <td style="padding: 6px 4px; border-bottom: 1px dashed #e2e8f0; font-size: 13px;">${idx + 1}. ${it.name}</td>
+          <td style="padding: 6px 4px; border-bottom: 1px dashed #e2e8f0; font-size: 13px; text-align: center;">${qtyNum}</td>
+          <td style="padding: 6px 4px; border-bottom: 1px dashed #e2e8f0; font-size: 13px; text-align: right;">${priceText}</td>
+          <td style="padding: 6px 4px; border-bottom: 1px dashed #e2e8f0; font-size: 13px; text-align: right; font-weight: bold;">${totalText}</td>
+        </tr>
+      `;
+    }).join('');
 
     const htmlContent = `
     <!DOCTYPE html>
@@ -47,7 +76,7 @@ app.post('/generate-receipt', async (req, res) => {
         .table th { background: #f8fafc; font-size: 12px; color: #475569; padding: 8px 4px; border-bottom: 2px solid #e2e8f0; }
         .total-box { background: #f8fafc; border-radius: 10px; padding: 12px; margin-top: 10px; border: 1px solid #e2e8f0; }
         .total-row { display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 700; color: #0f172a; }
-        .total-usd { font-size: 13px; color: #0284c7; font-weight: 600; text-align: right; margin-top: 2px; }
+        .total-sub { font-size: 13px; color: #0284c7; font-weight: 600; text-align: right; margin-top: 2px; }
         .status-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-top: 6px; }
         .unpaid { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
         .paid { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
@@ -59,7 +88,7 @@ app.post('/generate-receipt', async (req, res) => {
     <body>
       <div class="card" id="receipt-card">
         <div class="header">
-          <div class="store-name">🏪 ហាង អ៊ាង ភារ៉ា</div>
+          <div class="store-name">ហាង អ៊ាង ភារ៉ា</div>
           <div class="store-info">ផ្លូវ 73 កោះកណ្តាល ក្រុងក្រចេះ | 097 900 0030</div>
         </div>
         <div class="meta-row"><span>វិក្កយបត្រ:</span><span style="font-weight: 700;">#${receiptNo}</span></div>
@@ -84,9 +113,9 @@ app.post('/generate-receipt', async (req, res) => {
         <div class="total-box">
           <div class="total-row">
             <span>តម្លៃសរុប:</span>
-            <span style="color: #b91c1c;">${Number(totalMoney).toLocaleString()} ៛</span>
+            <span style="color: #b91c1c;">${displayPrimaryTotal}</span>
           </div>
-          <div class="total-usd">≈ $${totalUSD}</div>
+          <div class="total-sub">${displaySecondaryTotal}</div>
           <div style="text-align: right;">
             <span class="status-badge ${isUnpaid ? 'unpaid' : 'paid'}">
               ${isUnpaid ? '⚠️ មិនទាន់ទូទាត់' : '✅ បានទូទាត់រួច'}
