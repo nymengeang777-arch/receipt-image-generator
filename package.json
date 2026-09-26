@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "express": "^4.19.2",
-    "node-html-to-image": "^4.0.0"
+    "puppeteer": "^22.6.0"
   },
   "engines": {
     "node": ">=18"
