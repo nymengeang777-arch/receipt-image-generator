@@ -89,7 +89,7 @@ app.post('/generate-receipt', async (req, res) => {
       <div class="card" id="receipt-card">
         <div class="header">
           <div class="store-name">ហាង អ៊ាង ភារ៉ា</div>
-          <div class="store-info">ផ្លូវ 73 កោះកណ្តាល ក្រុងក្រចេះ | 097 900 0030</div>
+          <div class="store-info">ផ្លូវ 73 រកាកណ្តាល ក្រុងក្រចេះ | 097 900 0030</div>
         </div>
         <div class="meta-row"><span>វិក្កយបត្រ:</span><span style="font-weight: 700;">#${receiptNo}</span></div>
         <div class="meta-row"><span>កាលបរិច្ឆេទ:</span><span>${date}</span></div>
