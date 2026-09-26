@@ -115,6 +115,7 @@ app.post('/generate-receipt', async (req, res) => {
     });
 
     const page = await browser.newPage();
+    await page.setViewport({ width: 420, height: 800, deviceScaleFactor: 2 });
     await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
     const element = await page.$('#receipt-card');
     const imageBuffer = await element.screenshot({ type: 'png' });
